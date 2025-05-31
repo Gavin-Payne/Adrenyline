@@ -1,0 +1,33 @@
+Backend/.env
+Frontend/.env
+Frontend/node_modules/.cache/
+.env
+Frontend/node_modules/
+Backend/node_modules/
+node_modules/
+
+# Log files
+*.log
+Backend/logs/
+
+# Database files
+*.db
+mlbDBs/
+
+# Build artifacts
+Frontend/dist/
+Frontend/build/
+Backend/dist/
+Backend/build/
+
+# OS/Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+.git_backup/

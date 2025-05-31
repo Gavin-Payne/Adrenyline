@@ -1,0 +1,5 @@
+blender
+numpy
+pandas
+matplotlib
+bpy

@@ -1,0 +1,334 @@
+/* Base styling */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #080b14; /* Darker base background */
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d1118;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #252a34;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #303646;
+}
+
+/* DARK SOPHISTICATED ANIMATED BACKGROUND */
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* More subtle, darker gradient background */
+.animated-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    125deg,
+    #06070d 0%,
+    #0d1219 20%,
+    #111a28 40%,
+    #13172a 60%,
+    #0d1219 80%,
+    #06070d 100%
+  );
+  background-size: 400% 400%;
+  animation: subtleGradientAnimation 45s ease infinite; /* Very slow animation */
+  z-index: -2;
+  opacity: 1;
+}
+
+/* Subtle radial gradient overlay */
+.animated-gradient:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(28, 41, 90, 0.4) 0%,
+    rgba(13, 18, 34, 0.1) 50%,
+    rgba(6, 7, 13, 0) 100%
+  );
+  animation: subtlePulse 20s ease-in-out infinite alternate;
+  mix-blend-mode: multiply;
+}
+
+/* Fine noise texture */
+.noise-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  z-index: -3;
+  pointer-events: none;
+}
+
+/* Sophisticated floating shapes with subtle glow */
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation-duration: 60s; /* Very slow movement */
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  opacity: 0.15; /* Much more subtle */
+  mix-blend-mode: screen;
+}
+
+.shape-1 {
+  width: 900px;
+  height: 900px;
+  left: -300px;
+  top: -300px;
+  background: radial-gradient(circle at center, rgba(41, 77, 158, 0.3), rgba(41, 77, 158, 0));
+  animation: gentleShape1 60s linear infinite;
+}
+
+.shape-2 {
+  width: 800px;
+  height: 800px;
+  right: -200px;
+  bottom: -200px;
+  background: radial-gradient(circle at center, rgba(64, 59, 115, 0.3), rgba(64, 59, 115, 0));
+  animation: gentleShape2 70s linear infinite;
+}
+
+.shape-3 {
+  width: 1000px;
+  height: 1000px;
+  right: 10%;
+  top: 10%;
+  background: radial-gradient(circle at center, rgba(29, 53, 87, 0.25), rgba(29, 53, 87, 0));
+  animation: gentleShape3 80s linear infinite;
+}
+
+/* Trading interface elements - much more subtle */
+.grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(0deg, transparent 24%, rgba(30, 41, 59, 0.03) 25%, rgba(30, 41, 59, 0.03) 26%, transparent 27%, transparent 74%, rgba(30, 41, 59, 0.03) 75%, rgba(30, 41, 59, 0.03) 76%, transparent 77%, transparent),
+    linear-gradient(90deg, transparent 24%, rgba(30, 41, 59, 0.03) 25%, rgba(30, 41, 59, 0.03) 26%, transparent 27%, transparent 74%, rgba(30, 41, 59, 0.03) 75%, rgba(30, 41, 59, 0.03) 76%, transparent 77%, transparent);
+  background-size: 50px 50px;
+  opacity: 0.7;
+  z-index: -1;
+}
+
+/* Subtle network connection lines */
+.network-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+  z-index: -2;
+}
+
+.connection-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    rgba(60, 89, 153, 0) 0%,
+    rgba(60, 89, 153, 0.3) 50%,
+    rgba(60, 89, 153, 0) 100%
+  );
+  animation: connectionPulse 15s ease-in-out infinite;
+}
+
+.connection-line-1 {
+  width: 200px;
+  top: 20%;
+  left: 10%;
+  transform: rotate(25deg);
+  animation-delay: 0s;
+}
+
+.connection-line-2 {
+  width: 150px;
+  top: 30%;
+  right: 15%;
+  transform: rotate(-15deg);
+  animation-delay: 3s;
+}
+
+.connection-line-3 {
+  width: 180px;
+  bottom: 25%;
+  left: 20%;
+  transform: rotate(-30deg);
+  animation-delay: 6s;
+}
+
+.connection-line-4 {
+  width: 220px;
+  bottom: 15%;
+  right: 10%;
+  transform: rotate(10deg);
+  animation-delay: 9s;
+}
+
+/* Subtle data points */
+.data-point {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: rgba(100, 141, 229, 0.5);
+  border-radius: 50%;
+  animation: dataPulse 10s ease-in-out infinite alternate;
+}
+
+.data-point-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.data-point-2 {
+  top: 30%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+.data-point-3 {
+  bottom: 25%;
+  left: 20%;
+  animation-delay: 4s;
+}
+
+.data-point-4 {
+  bottom: 15%;
+  right: 10%;
+  animation-delay: 6s;
+}
+
+.data-point-5 {
+  top: 50%;
+  left: 50%;
+  animation-delay: 8s;
+}
+
+/* Subtle vector chart */
+.chart-vector {
+  position: absolute;
+  bottom: 10%;
+  left: 5%;
+  width: 300px;
+  height: 80px;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg width='300' height='80' viewBox='0 0 300 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,40 L10,38 L20,42 L30,35 L40,32 L50,38 L60,36 L70,40 L80,30 L90,32 L100,25 L110,28 L120,26 L130,30 L140,32 L150,34 L160,25 L170,28 L180,20 L190,25 L200,15 L210,18 L220,22 L230,18 L240,25 L250,20 L260,22 L270,18 L280,15 L290,20 L300,15' fill='none' stroke='%233C5999' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  filter: blur(0.5px);
+  animation: subtleChartMovement 30s ease-in-out infinite alternate;
+}
+
+/* ELEGANT ANIMATION KEYFRAMES */
+@keyframes subtleGradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes subtlePulse {
+  0% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 0.1; }
+}
+
+@keyframes gentleShape1 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(50px, 50px) rotate(120deg); }
+  66% { transform: translate(25px, 100px) rotate(240deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes gentleShape2 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(-70px, -30px) rotate(120deg); }
+  66% { transform: translate(-50px, -60px) rotate(240deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes gentleShape3 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(-40px, 40px) rotate(120deg); }
+  66% { transform: translate(60px, -30px) rotate(240deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes connectionPulse {
+  0% { opacity: 0; width: 0; }
+  30% { opacity: 0.15; width: 100%; }
+  70% { opacity: 0.15; width: 100%; }
+  100% { opacity: 0; width: 0; }
+}
+
+@keyframes dataPulse {
+  0% { transform: scale(1); opacity: 0.3; box-shadow: 0 0 0 0 rgba(100, 141, 229, 0.1); }
+  50% { transform: scale(3); opacity: 0.5; box-shadow: 0 0 0 5px rgba(100, 141, 229, 0.05); }
+  100% { transform: scale(1); opacity: 0.3; box-shadow: 0 0 0 0 rgba(100, 141, 229, 0.1); }
+}
+
+@keyframes subtleChartMovement {
+  0% { transform: translateY(0); opacity: 0.1; }
+  50% { transform: translateY(-10px); opacity: 0.15; }
+  100% { transform: translateY(0); opacity: 0.1; }
+}

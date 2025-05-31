@@ -1,0 +1,312 @@
+/* Enhanced MLB Live Games */
+
+/* General adjustments for dark theme */
+body, .live-games-container {
+  background: linear-gradient(to bottom, #121212, #1e1e1e); /* Gradient background */
+  color: #e0e0e0;
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; /* Modern font */
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Hide overflow for animations */
+}
+
+/* Animated background circles */
+.live-games-container::before,
+.live-games-container::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1); /* Purple accent color */
+  filter: blur(50px);
+  animation: float 12s linear infinite;
+  z-index: 0;
+}
+
+.live-games-container::before {
+  top: -50px;
+  left: 20%;
+}
+
+.live-games-container::after {
+  bottom: -80px;
+  right: 30%;
+  animation-delay: -6s;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, -20px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Header adjustments */
+.games-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: none;
+  border: none;
+  position: relative; /* Ensure header is above animated circles */
+  z-index: 1;
+  padding: 0 20px; /* Add padding to header */
+}
+
+.games-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #bb86fc; /* Purple accent color */
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+}
+
+.last-updated {
+  font-size: 0.85rem;
+  color: #6a6a6a; /* Muted gray */
+  margin-right: 10px;
+}
+
+/* Button styles */
+.refresh-button, .back-button, .mlb-back, .mlb-refresh {
+  background: #1e1e1e; /* Darker button background */
+  color: #bb86fc; /* Purple button text */
+  border-radius: 12px; /* More rounded buttons */
+  padding: 10px 20px; /* Slightly larger buttons */
+  transition: background 0.2s, color 0.2s;
+  border: none;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.refresh-button:hover, .back-button:hover, .mlb-back:hover, .mlb-refresh:hover {
+  background: #2d2d2d; /* Slightly lighter on hover */
+  color: #fff;
+}
+
+/* Grid layout */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Two games per row */
+  gap: 36px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 20px; /* Add padding to grid */
+}
+
+/* Card styles */
+.game-card, .mlb-card, .mlb-detail-card {
+  background: #1e1e1e; /* Dark card background */
+  border-radius: 28px; /* More rounded cards */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  color: #e0e0e0;
+  padding: 36px; /* Increased padding */
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Increased gap */
+  border: none;
+  position: relative; /* Ensure cards are above animated circles */
+  z-index: 1;
+}
+
+/* Status bar */
+.game-status-bar, .mlb-status {
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+/* Status badge */
+.status-badge-small, .mlb-status-badge, .status-badge {
+  display: inline-block;
+  padding: 8px 20px; /* Slightly larger badges */
+  border-radius: 20px; /* More rounded badges */
+  font-size: 1rem; /* Slightly larger font */
+  font-weight: 600;
+  background: #2d2d2d; /* Darker badge background */
+  color: #b3b3b3;
+  letter-spacing: 0.6px;
+  border: none;
+}
+
+.status-badge-small.live, .mlb-status-badge.live, .status-badge.live {
+  background: #4caf50; /* Green for live games */
+  color: #fff;
+}
+
+/* Team information */
+.game-teams, .mlb-teams {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.game-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-logo-small, .mlb-logo, .mlb-team-logo, .team-logo {
+  width: 56px; /* Slightly larger logos */
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem; /* Slightly larger font */
+  font-weight: 700;
+  background: #2d2d2d; /* Darker logo background */
+  color: #e0e0e0;
+  border: none;
+  box-shadow: none;
+}
+
+.team-name-small, .mlb-team-name, .team-name {
+  font-size: 1.1rem;
+  color: #b3b3b3;
+  text-align: center;
+  font-weight: 500;
+  padding: 0 10px; /* Add padding to team names */
+}
+
+.team-score-small, .mlb-team-score, .team-score {
+  font-weight: 700;
+  font-size: 1.6rem; /* Slightly larger score */
+  color: #fff;
+  text-shadow: none;
+}
+
+/* Stadium information */
+.mlb-stadium {
+  text-align: center;
+  font-size: 1.05rem;
+  margin: 16px 0 8px 0;
+  color: #6a6a6a; /* Muted stadium text */
+  font-weight: 500;
+  padding: 0 10px; /* Add padding to stadium text */
+}
+
+/* Leaders section */
+.mlb-leaders-row {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.mlb-leaders-section {
+  flex: 1;
+  background: #2d2d2d; /* Darker leaders background */
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: none;
+}
+
+.mlb-leaders-section h3 {
+  color: #bb86fc; /* Purple leaders header */
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+}
+
+/* Player table */
+.mlb-player-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  background: none;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 0.95em;
+}
+
+.mlb-player-table th, .mlb-player-table td {
+  border: none;
+  padding: 7px 5px;
+  text-align: center;
+  color: #e0e0e0;
+  background: none;
+  font-weight: 400;
+}
+
+.mlb-player-table th {
+  font-weight: 600;
+  background: none;
+  color: #bb86fc; /* Purple table header */
+  border-bottom: 1px solid #444;
+}
+
+.mlb-player-table tr {
+  background: none;
+}
+
+.mlb-player-table tr:hover {
+  background: #3a3a3a; /* Darker row hover */
+  transition: background 0.2s;
+}
+
+/* Team label */
+.mlb-team-label {
+  font-weight: 600;
+  color: #b3b3b3;
+  margin-bottom: 8px;
+  text-align: center;
+  letter-spacing: 0.6px;
+}
+
+/* Players preview */
+.mlb-players-preview {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.mlb-team-players {
+  flex: 1;
+  background: #2d2d2d; /* Darker players background */
+  border-radius: 10px;
+  padding: 12px 8px;
+  box-shadow: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .games-grid {
+    grid-template-columns: 1fr; /* One game per row on smaller screens */
+    gap: 24px;
+  }
+  .mlb-players-preview {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Apply animations */
+.games-header, .games-grid, .game-card, .mlb-card, .mlb-detail-card {
+  animation: fadeIn 0.4s ease-out forwards;
+}
