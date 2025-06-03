@@ -103,11 +103,10 @@ npm install
 ## Notes
 
 - **Currencies have no real-world value. (for now)** The app is for entertainment and educational purposes only.
-- **MLB Simulation:** For advanced MLB play simulation, see [`Backend/dataControl/mlb-blender-sim/README.md`](Backend/dataControl/mlb-blender-sim/README.md).
 - **API Endpoints:** See backend `routes/` for available endpoints (auth, user, auctions, mlb, etc.).
 
 ---
 
 ## License
 
-This project is for educational and entertainment use only. See individual files for license details.
+uh
