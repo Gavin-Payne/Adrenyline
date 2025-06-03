@@ -154,6 +154,10 @@ class MLBLiveGamesAPI:
                     "pfxX": pitch_data.get("pfxX", None),
                     "pfxZ": pitch_data.get("pfxZ", None),
                     "plateTime": pitch_data.get("plateTime", None),
+                    # Added pitch result fields below
+                    "result": details.get("event", ""),
+                    "resultCode": details.get("code", ""),
+                    "description": details.get("description", ""),
                 })
             at_bats.append(at_bat)
         return at_bats

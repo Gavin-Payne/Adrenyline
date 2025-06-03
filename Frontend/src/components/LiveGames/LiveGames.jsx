@@ -33,6 +33,9 @@ const LiveGames = () => {
   const [pitchAnimIdx, setPitchAnimIdx] = useState(null);
   const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(null);
 
+  // Track if user just left a game to prevent auto-reselect
+  const justLeftGameRef = useRef(false);
+
   const transformGameData = (game) => {
     if (!game) return null;
 
@@ -93,7 +96,7 @@ const LiveGames = () => {
           : response.data;
         setGames(transformedGames);
 
-        if (selectedGame) {
+        if (selectedGame && !justLeftGameRef.current) {
           const updatedGame = transformedGames.find(g => g.gameId === selectedGame.gameId);
           if (updatedGame) setSelectedGame(updatedGame);
         }
@@ -114,15 +117,12 @@ const LiveGames = () => {
   }, [activeSport]);
 
   useEffect(() => {
-    let interval = 45000;
-    if (
-      activeSport === 'mlb' &&
-      selectedGame &&
-      mlbActiveTab === 'playbyplay'
-    ) {
-      interval = 1000;
+    let intervalId;
+    if (activeSport === 'mlb' && selectedGame && mlbActiveTab === 'playbyplay') {
+      intervalId = setInterval(() => fetchLiveGames(true), 5000);
+    } else if (!selectedGame) {
+      intervalId = setInterval(() => fetchLiveGames(false), 45000);
     }
-    const intervalId = setInterval(() => fetchLiveGames(false), interval);
     return () => clearInterval(intervalId);
   }, [activeSport, selectedGame, mlbActiveTab]);
 
@@ -140,6 +140,9 @@ const LiveGames = () => {
 
   const backToGameList = () => {
     setSelectedGame(null);
+    setSelectedPlay(null); // Reset play selection for MLB
+    setMlbActiveTab('playbyplay'); // Optionally reset MLB tab
+    justLeftGameRef.current = true;
   };
   const formatGameClock = (clock) => {
     if (!clock) return '';
@@ -368,12 +371,12 @@ const LiveGames = () => {
     if (!selectedGame.playByPlay) return;
     const plays = Array.isArray(selectedGame.playByPlay) ? selectedGame.playByPlay : [selectedGame.playByPlay];
     const sortedPlays = [...plays].reverse();
-    if (selectedPlay === null || selectedPlay >= sortedPlays.length - 1) return;
+    if (selectedPlay === null || selectedPlay <= 0) return;
     const play = sortedPlays[selectedPlay];
     if (play && play.result && play.pitches && play.pitches.length > 0) {
       if (autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
       const timeout = setTimeout(() => {
-        setSelectedPlay(selectedPlay + 1);
+        setSelectedPlay(selectedPlay - 1); // Move up to more recent play
       }, 7000); // 7 seconds
       setAutoAdvanceTimeout(timeout);
       return () => clearTimeout(timeout);
@@ -456,7 +459,8 @@ const LiveGames = () => {
                         </thead>
                         <tbody>
                           {play.pitches?.map((pitch, i) => {
-                            const type = getPitchResultType(pitch, play.result);
+                            const pitchResult = pitch.result || pitch.description || play.result || '';
+                            const type = getPitchResultType(pitch, pitchResult);
                             const resultColors = {
                               'ball': { fill: '#22c55e', text: '#fff' },
                               'foul': { fill: '#fde047', text: '#333' },
@@ -559,12 +563,17 @@ const LiveGames = () => {
                           ))}
                           <ellipse cx={displayWidth/2} cy={szBoxY + szBoxHeight + 32} rx={szBoxWidth/1.7} ry="18" fill="#000" opacity="0.18" />
                           {play.pitches?.map((pitch, i) => {
-                            if (!pitch.coordinates || pitch.coordinates.pX === undefined || pitch.coordinates.pZ === undefined) return null;
+                            // Support both pitch.coordinates.pX and pitch.pX
+                            const pX = pitch.coordinates?.pX ?? pitch.pX;
+                            const pZ = pitch.coordinates?.pZ ?? pitch.pZ;
+                            if (pX === undefined || pZ === undefined) return null;
                             const FEET_TO_PX = 120;
-                            const px = pxToX(pitch.coordinates.pX);
-                            const pz = pzToY(pitch.coordinates.pZ);
+                            const px = pxToX(pX);
+                            const pz = pzToY(pZ);
                             const ballRadiusPx = 0.1208 * FEET_TO_PX;
-                            const type = getPitchResultType(pitch, play.result);
+                            // Use pitch.result or pitch.description for this pitch, fallback to play.result
+                            const pitchResult = pitch.result || pitch.description || play.result || '';
+                            const type = getPitchResultType(pitch, pitchResult);
                             const resultColors = {
                               'ball': { fill: '#22c55e', text: '#fff' },
                               'foul': { fill: '#fde047', text: '#333' },
