@@ -1,0 +1,9 @@
+requests
+beautifulsoup4
+pymongo
+python-dotenv
+pytz
+unicodedata2
+nba_api
+pandas
+lxml
