@@ -22,29 +22,36 @@ router.get('/players/:team', async (req, res) => {
   const category = req.query.category || 'hitting';
   const date = req.query.date;
   if (!date) return res.status(400).json({ error: 'Missing date parameter' });
-  const dbPath = path.join(__dirname, '../../mlbDBs/MLBGames.db');
-  const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
-  db.all("SELECT * FROM games WHERE date = ? AND (team1 = ? OR team2 = ?)", [date, team, team], (err, rows) => {
-    db.close();
-    if (err) return res.status(500).json({ error: err.message });
-    if (!rows.length) return res.json([]);
+  try {
+    const db = mongoose.connection.useDb('mlb');
+    const gamesCollection = db.collection('games');
+    // Find the game(s) for the given date and team
+    const games = await gamesCollection.find({
+      $and: [
+        { $or: [ { date }, { game_date: date } ] },
+        { $or: [ { team1: team }, { team2: team } ] }
+      ]
+    }).toArray();
+    if (!games.length) return res.json([]);
     let players = [];
-    rows.forEach(row => {
+    games.forEach(row => {
       if (category === 'pitching') {
-        if (row.team1 === team) players.push(row.team1_pitcher);
-        if (row.team2 === team) players.push(row.team2_pitcher);
+        if (row.team1 === team && row.team1_pitcher) players.push(row.team1_pitcher);
+        if (row.team2 === team && row.team2_pitcher) players.push(row.team2_pitcher);
       } else {
         if (row.team1 === team) {
-          for (let i = 1; i <= 9; i++) players.push(row[`team1_batter${i}`]);
+          for (let i = 1; i <= 9; i++) if (row[`team1_batter${i}`]) players.push(row[`team1_batter${i}`]);
         }
         if (row.team2 === team) {
-          for (let i = 1; i <= 9; i++) players.push(row[`team2_batter${i}`]);
+          for (let i = 1; i <= 9; i++) if (row[`team2_batter${i}`]) players.push(row[`team2_batter${i}`]);
         }
       }
     });
     players = [...new Set(players.filter(Boolean))];
     res.json(players);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get('/live', async (req, res) => {
