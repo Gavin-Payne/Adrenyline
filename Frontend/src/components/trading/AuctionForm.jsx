@@ -44,6 +44,7 @@ import {
 import commonIcon from '../../assets/common.png';
 import premiumIcon from '../../assets/premium.png';
 import { DateTime } from 'luxon';
+import api from '../../services/api';
 
 const colors = {
   primary: '#6366F1',
@@ -150,61 +151,34 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
       setAvailablePlayers([]);
       return;
     }
-    
     try {
       setLoading(true);
       setFormError('');
       const teams = game.split(' vs ');
-      
-      console.log(`Fetching ${selectedSport.toUpperCase()} players for game:`, game);
-      console.log('Teams extracted:', teams);
-      
       if (teams.length !== 2) {
-        console.error('Invalid game format:', game);
         setFormError('Invalid game format');
         setAvailablePlayers([]);
         setLoading(false);
         return;
       }
-      
-      const categoryParam = selectedSport === 'mlb' ? `&category=${mlbCategory}` : '';
-      
-      console.log('Fetching players for teams:', teams);
-      
-      const [team1Response, team2Response] = await Promise.all([
-        fetch(
-          selectedSport === 'mlb'
-            ? `process.env.REACT_APP_API_URL/mlb/players/${encodeURIComponent(teams[0])}?category=${mlbCategory}&date=${selectedDate}`
-            : `process.env.REACT_APP_API_URL/players/${encodeURIComponent(teams[0])}?sport=${selectedSport}${categoryParam}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        ),
-        fetch(
-          selectedSport === 'mlb'
-            ? `process.env.REACT_APP_API_URL/mlb/players/${encodeURIComponent(teams[1])}?category=${mlbCategory}&date=${selectedDate}`
-            : `process.env.REACT_APP_API_URL/players/${encodeURIComponent(teams[1])}?sport=${selectedSport}${categoryParam}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-      ]);
-
-      if (!team1Response.ok) {
-        throw new Error(`Failed to fetch players for ${teams[0]}: ${team1Response.statusText}`);
+      let team1Players = [];
+      let team2Players = [];
+      if (selectedSport === 'mlb') {
+        const [team1Res, team2Res] = await Promise.all([
+          api.get(`/mlb/players/${encodeURIComponent(teams[0])}?category=${mlbCategory}&date=${selectedDate}`),
+          api.get(`/mlb/players/${encodeURIComponent(teams[1])}?category=${mlbCategory}&date=${selectedDate}`)
+        ]);
+        team1Players = team1Res.data;
+        team2Players = team2Res.data;
+      } else {
+        const categoryParam = selectedSport === 'nba' ? '' : `&category=${mlbCategory}`;
+        const [team1Res, team2Res] = await Promise.all([
+          api.get(`/players/${encodeURIComponent(teams[0])}?sport=${selectedSport}${categoryParam}`),
+          api.get(`/players/${encodeURIComponent(teams[1])}?sport=${selectedSport}${categoryParam}`)
+        ]);
+        team1Players = team1Res.data;
+        team2Players = team2Res.data;
       }
-      if (!team2Response.ok) {
-        throw new Error(`Failed to fetch players for ${teams[1]}: ${team2Response.statusText}`);
-      }
-
-      const team1Players = await team1Response.json();
-      const team2Players = await team2Response.json();
       const normalizePlayers = arr => arr.map(p => typeof p === 'string' ? { name: p } : p);
       if (Array.isArray(team1Players) && Array.isArray(team2Players)) {
         setAvailablePlayers([
@@ -216,7 +190,6 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
         setAvailablePlayers([]);
       }
     } catch (error) {
-      console.error('Error fetching players:', error);
       setFormError(`Failed to load players: ${error.message}`);
       setAvailablePlayers([]);
     } finally {
@@ -233,19 +206,8 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
       setSelectedPlayer('');
       const fetchGames = async () => {
         try {
-          const response = await fetch(
-            `process.env.REACT_APP_API_URL/mlb/games?date=${selectedDate}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-          if (!response.ok) {
-            throw new Error(`Failed to fetch games: ${response.statusText}`);
-          }
-          const data = await response.json();
+          const response = await api.get(`/mlb/games?date=${selectedDate}`);
+          const data = response.data;
           if (Array.isArray(data) && data.length > 0) {
             setAvailableGames(data);
           } else {
@@ -657,7 +619,7 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
               onPlayerChange={setSelectedPlayer}
               playersLoading={loading}
               playersError={formError && selectedGame ? formError : ''}
-              mlbCategory={mlbCategory} // <-- pass the current tab
+              mlbCategory={mlbCategory} 
             />
           </div>
         )}
