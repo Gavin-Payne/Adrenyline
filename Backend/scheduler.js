@@ -12,21 +12,17 @@ const User = require('./models/Users');
 const CommodityPrice = require('./models/CommodityPrice');
 const fetch = require('node-fetch');
 
-// Load environment variables from .env file
 dotenv.config();
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Connected to MongoDB for auction processing`))
   .catch(err => console.error(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MongoDB connection error:`, err));
 
-// Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, 'logs');
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Schedule box scores scraping to run at 6 AM every day
 schedule.scheduleJob('0 6 * * *', () => {
   console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Running scheduled NBA box scores scraper...`);
   
@@ -62,16 +58,13 @@ schedule.scheduleJob('0 6 * * *', () => {
     console.log(message);
     stdoutLog.write(message);
     
-    // Close the log streams
     stdoutLog.end();
     stderrLog.end();
     
-    // After scraping completes, process the auctions
     processCompletedAuctions();
   });
 });
 
-// Schedule a weekly backfill to run every Sunday at 3 AM to catch any missed data
 schedule.scheduleJob('0 3 * * 0', () => {
   console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Running weekly backfill of box scores...`);
   
@@ -80,7 +73,6 @@ schedule.scheduleJob('0 3 * * 0', () => {
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `boxscores-backfill-${dateStr}.log`), { flags: 'a' });
   const stderrLog = fs.createWriteStream(path.join(logsDir, `boxscores-backfill-${dateStr}-error.log`), { flags: 'a' });
   
-  // Run the backfill for the past 7 days
   const pythonProcess = spawn('python', [scriptPath, '--backfill', '7'], {
     env: {
       ...process.env,
@@ -110,24 +102,18 @@ schedule.scheduleJob('0 3 * * 0', () => {
     stdoutLog.end();
     stderrLog.end();
     
-    // After backfill completes, process more auctions that might now have data
     processCompletedAuctions();
   });
 });
 
-// Schedule auction completion processing to run every 2 minutes
 schedule.scheduleJob('*/2 * * * *', () => {
   processCompletedAuctions();
 });
 
-// --- MLB live games running flag ---
 let mlbLiveGamesRunning = false;
-// --- MLB box scores running flag ---
 let mlbBoxScoresRunning = false;
-// --- MLBGames.py running flag ---
 let mlbGamesRunning = false;
 
-// Schedule MLB live games scraping to run every 20 seconds (was every 4s)
 schedule.scheduleJob('*/50 * * * * *', () => {
   if (mlbLiveGamesRunning) {
     console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB live games script is still running, skipping this cycle.`);
@@ -161,7 +147,6 @@ schedule.scheduleJob('*/50 * * * * *', () => {
   });
 });
 
-// Schedule MLB box scores scraping to run every 2 minutes
 schedule.scheduleJob('*/2 * * * *', () => {
   if (mlbBoxScoresRunning) {
     console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB box scores script is still running, skipping this cycle.`);
@@ -199,7 +184,6 @@ schedule.scheduleJob('*/2 * * * *', () => {
   });
 });
 
-// Schedule MLBGames.py to run every 5 minutes
 schedule.scheduleJob('*/5 * * * *', () => {
   if (mlbGamesRunning) {
     console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLBGames.py script is still running, skipping this cycle.`);
@@ -263,7 +247,6 @@ async function processCompletedAuctions() {
         const gameDate = auction.gameDate ? new Date(auction.gameDate) : new Date(auction.date);
         const formattedDate = gameDate.toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'});
         
-        // Check if the game date has passed
         const today = new Date();
         if (gameDate > today) {
 
@@ -356,11 +339,9 @@ async function processCompletedAuctions() {
             const sellerRefund = auction.betSize;
             const buyerRefund = auction.betSize * (auction.multiplier - 1); // Buyer's portion
             
-            // Update balances
             auction.user[auction.betType] += sellerRefund;
             auction.soldTo[auction.betType] += buyerRefund;
             
-            // Update auction status
             auction.completed = true;
             auction.completedAt = new Date();
             auction.winner = null; // No winner in a tie
@@ -378,7 +359,6 @@ async function processCompletedAuctions() {
             continue;
           }
           
-          // Determine the winner based on condition
           let winnerId = null;
           let winnerIs = "";
           
@@ -386,19 +366,14 @@ async function processCompletedAuctions() {
               (condition === 'under' && actualValue < targetValue) || 
               (condition === 'exactly' && actualValue === targetValue) || 
               (condition === 'not exactly' && actualValue !== targetValue)) {
-            // Seller wins
             winnerId = auction.user._id;
             winnerIs = "seller";
           } else {
-            // Buyer wins
             winnerId = auction.soldTo._id;
             winnerIs = "buyer";
           }
           
-          // Calculate the total pot
           const totalPot = auction.betSize * auction.multiplier;
-          
-          // Update the winner's balance
           const winner = winnerId.equals(auction.user._id) ? auction.user : auction.soldTo;
           winner[auction.betType] += totalPot;
 
@@ -416,13 +391,10 @@ async function processCompletedAuctions() {
           console.log(`${logPrefix} Auction ${auction._id} completed. Winner: ${winner.username} (${winnerIs}), Pot: ${totalPot}, Actual ${auction.metric}: ${actualValue} vs ${auction.condition} ${targetValue}`);
           completedCount++;
           
-          // Update win/loss records for both parties
           if (winnerId.equals(auction.user._id)) {
-            // Seller won
             auction.user.wins = (auction.user.wins || 0) + 1;
             auction.soldTo.losses = (auction.soldTo.losses || 0) + 1;
           } else {
-            // Buyer won
             auction.soldTo.wins = (auction.soldTo.wins || 0) + 1;
             auction.user.losses = (auction.user.losses || 0) + 1;
           }
@@ -436,7 +408,6 @@ async function processCompletedAuctions() {
           const collection = db.collection('mlb_player_box_scores');
           const searchDate = gameDate.toISOString().split('T')[0]; 
 
-          // Find player box score for the date
           const playerBoxScore = await collection.findOne({
             playerName: { $regex: new RegExp(`^${auction.player}$`, 'i') },
             gameDate: { $regex: `^${searchDate}` }
@@ -473,7 +444,6 @@ async function processCompletedAuctions() {
               actualValue = playerBoxScore.stats.earnedRuns;
               break;
             case 'pitching outs':
-              // Convert innings pitched to outs
               const inningString = playerBoxScore.stats.inningsPitched || "0";
               const fullInnings = parseInt(inningString);
               const partialInning = inningString.includes('.') ? 
@@ -492,24 +462,19 @@ async function processCompletedAuctions() {
 
           console.log(`${logPrefix} Found MLB statistic: ${auction.player} ${auction.metric}=${actualValue} vs ${auction.condition} ${auction.value}`);
           
-          // Check if it's a tie
           const targetValue = auction.value;
           const condition = auction.condition.toLowerCase();
           const isExactTie = actualValue === targetValue && condition === 'exactly';
           
-          //If it's an exact tie, refund both parties
           if (isExactTie || (actualValue === targetValue && (condition === 'over' || condition === 'under'))) {
             console.log(`${logPrefix} Exact match: ${actualValue} ${auction.metric} equals ${targetValue}. Processing refund.`);
 
-            // Calculate refund amount
             const sellerRefund = auction.betSize;
             const buyerRefund = auction.betSize * (auction.multiplier - 1);
             
-            // Update balances
             auction.user[auction.betType] += sellerRefund;
             auction.soldTo[auction.betType] += buyerRefund;
             
-            // Update auction status
             auction.completed = true;
             auction.completedAt = new Date();
             auction.winner = null;
@@ -527,7 +492,6 @@ async function processCompletedAuctions() {
             continue;
           }
           
-          // Determine the winner based on condition
           let winnerId = null;
           let winnerIs = "";
           
@@ -535,11 +499,9 @@ async function processCompletedAuctions() {
               (condition === 'under' && actualValue < targetValue) || 
               (condition === 'exactly' && actualValue === targetValue) || 
               (condition === 'not exactly' && actualValue !== targetValue)) {
-            // Seller wins
             winnerId = auction.user._id;
             winnerIs = "seller";
           } else {
-            // Buyer wins
             winnerId = auction.soldTo._id;
             winnerIs = "buyer";
           }
@@ -591,7 +553,6 @@ async function processCompletedAuctions() {
   }
 }
 
-// process expired auctions every hour
 async function processExpiredAuctions() {
   const logPrefix = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] [EXPIRED-PROCESSOR]`;
   console.log(`${logPrefix} Starting to process expired auctions...`);
@@ -621,7 +582,6 @@ async function processExpiredAuctions() {
         const currencyToRefund = auction.betType;
         const refundAmount = auction.betSize;
         
-        // Update user's balance
         user[currencyToRefund] += refundAmount;
 
         auction.refunded = true;
