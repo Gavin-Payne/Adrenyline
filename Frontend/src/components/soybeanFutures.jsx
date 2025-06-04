@@ -32,7 +32,7 @@ const SoybeanFuturesGraph = () => {
 
         const fetchData = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/graphics/soybean_data");
+                const response = await fetch("process.env.REACT_APP_API_URL/graphics/soybean_data");
 
                 if (!response.ok) {
                     throw new Error(`API request failed: ${response.status}`);

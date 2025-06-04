@@ -120,104 +120,120 @@ schedule.scheduleJob('*/2 * * * *', () => {
   processCompletedAuctions();
 });
 
-// Schedule MLB live games scraping to run every 4 seconds
-schedule.scheduleJob('*/4 * * * * *', () => {
+// --- MLB live games running flag ---
+let mlbLiveGamesRunning = false;
+// --- MLB box scores running flag ---
+let mlbBoxScoresRunning = false;
+// --- MLBGames.py running flag ---
+let mlbGamesRunning = false;
 
+// Schedule MLB live games scraping to run every 20 seconds (was every 4s)
+schedule.scheduleJob('*/50 * * * * *', () => {
+  if (mlbLiveGamesRunning) {
+    console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB live games script is still running, skipping this cycle.`);
+    return;
+  }
+  mlbLiveGamesRunning = true;
   const scriptPath = path.join(__dirname, 'dataControl/mlbLiveGames.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlb-live-${dateStr}.log`), { flags: 'a' });
   const stderrLog = fs.createWriteStream(path.join(logsDir, `mlb-live-${dateStr}-error.log`), { flags: 'a' });
-
   const pythonProcess = spawn('python', [scriptPath], {
     env: {
       ...process.env,
       MONGODB_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/sports_trading'
     }
   });
-
   pythonProcess.stdout.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${data}`;
+    stdoutLog.write(message);
   });
-
   pythonProcess.stderr.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ERROR: ${data}`;
+    stderrLog.write(message);
   });
-
   pythonProcess.on('close', (code) => {
+    const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB live games script exited with code ${code}\n`;
+    stdoutLog.write(message);
+    stdoutLog.end();
+    stderrLog.end();
+    mlbLiveGamesRunning = false;
   });
 });
 
 // Schedule MLB box scores scraping to run every 2 minutes
 schedule.scheduleJob('*/2 * * * *', () => {
+  if (mlbBoxScoresRunning) {
+    console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB box scores script is still running, skipping this cycle.`);
+    return;
+  }
+  mlbBoxScoresRunning = true;
   console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Running scheduled MLB box scores scraper...`);
-
   const scriptPath = path.join(__dirname, 'dataControl/mlbResults/mlbBoxScores.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlb-boxscores-${dateStr}.log`), { flags: 'a' });
   const stderrLog = fs.createWriteStream(path.join(logsDir, `mlb-boxscores-${dateStr}-error.log`), { flags: 'a' });
-
   const pythonProcess = spawn('python', [scriptPath], {
     env: {
       ...process.env,
       MONGODB_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/sports_trading'
     }
   });
-
   pythonProcess.stdout.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${data}`;
     console.log(message);
     stdoutLog.write(message);
   });
-
   pythonProcess.stderr.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ERROR: ${data}`;
     console.error(message);
     stderrLog.write(message);
   });
-
   pythonProcess.on('close', (code) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB box scores scraper exited with code ${code}\n`;
     console.log(message);
     stdoutLog.write(message);
     stdoutLog.end();
     stderrLog.end();
+    mlbBoxScoresRunning = false;
   });
 });
 
 // Schedule MLBGames.py to run every 5 minutes
 schedule.scheduleJob('*/5 * * * *', () => {
+  if (mlbGamesRunning) {
+    console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLBGames.py script is still running, skipping this cycle.`);
+    return;
+  }
+  mlbGamesRunning = true;
   console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Running scheduled MLBGames.py (all games DB) update...`);
-
   const scriptPath = path.join(__dirname, 'dataControl/MLBGames.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlbgames-${dateStr}.log`), { flags: 'a' });
   const stderrLog = fs.createWriteStream(path.join(logsDir, `mlbgames-${dateStr}-error.log`), { flags: 'a' });
-
   const pythonProcess = spawn('python', [scriptPath], {
     env: {
       ...process.env,
       MONGODB_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/sports_trading'
     }
   });
-
   pythonProcess.stdout.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${data}`;
     console.log(message);
     stdoutLog.write(message);
   });
-
   pythonProcess.stderr.on('data', (data) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ERROR: ${data}`;
     console.error(message);
     stderrLog.write(message);
   });
-
   pythonProcess.on('close', (code) => {
     const message = `[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLBGames.py exited with code ${code}\n`;
     console.log(message);
     stdoutLog.write(message);
     stdoutLog.end();
     stderrLog.end();
+    mlbGamesRunning = false;
   });
 });
 

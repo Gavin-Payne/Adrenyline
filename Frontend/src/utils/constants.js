@@ -45,7 +45,7 @@ export const TEAM_COLORS = {
 };
 
 export const API_ENDPOINTS = {
-  BASE_URL: 'http://localhost:5000/api',
+  BASE_URL: process.env.REACT_APP_API_URL,
   AUTH: {
     LOGIN: '/auth/login',
     SIGNUP: '/auth/signup',

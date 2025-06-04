@@ -23,13 +23,13 @@ const PlayerSelector = ({
         const teams = selectedGame.split(' vs ');
         if (teams.length === 2) {
           const [team1Response, team2Response] = await Promise.all([
-            fetch(`http://localhost:5000/api/players/${teams[0]}`, {
+            fetch(`process.env.REACT_APP_API_URL/players/${teams[0]}`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               }
             }),
-            fetch(`http://localhost:5000/api/players/${teams[1]}`, {
+            fetch(`process.env.REACT_APP_API_URL/players/${teams[1]}`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

@@ -174,8 +174,8 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
       const [team1Response, team2Response] = await Promise.all([
         fetch(
           selectedSport === 'mlb'
-            ? `http://localhost:5000/api/mlb/players/${encodeURIComponent(teams[0])}?category=${mlbCategory}&date=${selectedDate}`
-            : `http://localhost:5000/api/players/${encodeURIComponent(teams[0])}?sport=${selectedSport}${categoryParam}`,
+            ? `process.env.REACT_APP_API_URL/mlb/players/${encodeURIComponent(teams[0])}?category=${mlbCategory}&date=${selectedDate}`
+            : `process.env.REACT_APP_API_URL/players/${encodeURIComponent(teams[0])}?sport=${selectedSport}${categoryParam}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -185,8 +185,8 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
         ),
         fetch(
           selectedSport === 'mlb'
-            ? `http://localhost:5000/api/mlb/players/${encodeURIComponent(teams[1])}?category=${mlbCategory}&date=${selectedDate}`
-            : `http://localhost:5000/api/players/${encodeURIComponent(teams[1])}?sport=${selectedSport}${categoryParam}`,
+            ? `process.env.REACT_APP_API_URL/mlb/players/${encodeURIComponent(teams[1])}?category=${mlbCategory}&date=${selectedDate}`
+            : `process.env.REACT_APP_API_URL/players/${encodeURIComponent(teams[1])}?sport=${selectedSport}${categoryParam}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -234,7 +234,7 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
       const fetchGames = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/mlb/games?date=${selectedDate}`,
+            `process.env.REACT_APP_API_URL/mlb/games?date=${selectedDate}`,
             {
               headers: {
                 'Authorization': `Bearer ${token}`,

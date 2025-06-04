@@ -11,9 +11,9 @@ const useAvailableGames = (token) => {
       setFormError('');
       let url;
       if (sport === 'mlb') {
-        url = `http://localhost:5000/api/mlb/games?date=${date}`;
+        url = `process.env.REACT_APP_API_URL/mlb/games?date=${date}`;
       } else {
-        url = `http://localhost:5000/api/auctions/games?date=${date}&sport=${sport}`;
+        url = `process.env.REACT_APP_API_URL/auctions/games?date=${date}&sport=${sport}`;
         if (mlbCategory) url += `&category=${mlbCategory}`;
       }
       const response = await fetch(url, {

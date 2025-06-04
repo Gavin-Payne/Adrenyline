@@ -4,8 +4,7 @@ import time
 import json
 import logging
 import requests
-import concurrent.futures
-from datetime import datetime, timedelta
+from datetime import datetime
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
@@ -78,12 +77,11 @@ class MLBLiveGamesAPI:
                 upsert=True
             )
             return game_pk
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            future_to_game = {executor.submit(process_single_game, game): game for game in games}
-            for future in concurrent.futures.as_completed(future_to_game):
-                game_pk = future.result()
-                if game_pk:
-                    active_game_ids.append(game_pk)
+        # Sequential processing to reduce memory usage
+        for game in games:
+            game_pk = process_single_game(game)
+            if game_pk:
+                active_game_ids.append(game_pk)
         self.cleanup_old_games(active_game_ids)
 
     def extract_play_by_play(self, game_data):
