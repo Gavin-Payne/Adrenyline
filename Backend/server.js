@@ -22,7 +22,8 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://imperium-6msr.onrender.com'
+  'https://imperium-6msr.onrender.com',
+  'https://imperium-blond.vercel.app'
 ];
 app.use(cors({
   origin: function(origin, callback) {
