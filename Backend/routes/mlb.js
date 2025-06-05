@@ -4,6 +4,40 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const mongoose = require('mongoose');
 
+// Static MLB team name to abbreviation mapping
+const MLB_TEAM_ABBR = {
+  'Arizona Diamondbacks': 'ARI',
+  'Atlanta Braves': 'ATL',
+  'Baltimore Orioles': 'BAL',
+  'Boston Red Sox': 'BOS',
+  'Chicago White Sox': 'CWS',
+  'Chicago Cubs': 'CHC',
+  'Cincinnati Reds': 'CIN',
+  'Cleveland Guardians': 'CLE',
+  'Colorado Rockies': 'COL',
+  'Detroit Tigers': 'DET',
+  'Houston Astros': 'HOU',
+  'Kansas City Royals': 'KC',
+  'Los Angeles Angels': 'LAA',
+  'Los Angeles Dodgers': 'LAD',
+  'Miami Marlins': 'MIA',
+  'Milwaukee Brewers': 'MIL',
+  'Minnesota Twins': 'MIN',
+  'New York Yankees': 'NYY',
+  'New York Mets': 'NYM',
+  'Oakland Athletics': 'OAK',
+  'Philadelphia Phillies': 'PHI',
+  'Pittsburgh Pirates': 'PIT',
+  'San Diego Padres': 'SD',
+  'San Francisco Giants': 'SF',
+  'Seattle Mariners': 'SEA',
+  'St. Louis Cardinals': 'STL',
+  'Tampa Bay Rays': 'TB',
+  'Texas Rangers': 'TEX',
+  'Toronto Blue Jays': 'TOR',
+  'Washington Nationals': 'WSH'
+};
+
 router.get('/games', async (req, res) => {
   const date = req.query.date;
   if (!date) return res.status(400).json({ error: 'Missing date parameter' });
@@ -76,12 +110,15 @@ router.get('/boxscores', async (req, res) => {
       ...doc.stats,
       playerName: doc.playerName,
       team: doc.team,
+      teamAbbr: MLB_TEAM_ABBR[doc.team] || doc.team,
       opponent: doc.opponent,
       side: doc.side,
       position: doc.position,
       type: doc.type,
       date: doc.gameDate ? doc.gameDate.slice(0, 10) : date,
-      matchup: `${doc.opponent} @ ${doc.team}`
+      matchup: `${doc.opponent} @ ${doc.team}`,
+      gameStatus: doc.gameStatus,
+      gameFinished: doc.gameFinished
     }));
     res.json(flatPlayers);
   } catch (error) {

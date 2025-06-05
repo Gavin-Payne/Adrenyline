@@ -110,16 +110,10 @@ schedule.scheduleJob('*/2 * * * *', () => {
   processCompletedAuctions();
 });
 
-let mlbLiveGamesRunning = false;
 let mlbBoxScoresRunning = false;
 let mlbGamesRunning = false;
 
-schedule.scheduleJob('*/0 2 * * * *', () => {
-  if (mlbLiveGamesRunning) {
-    console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB live games script is still running, skipping this cycle.`);
-    return;
-  }
-  mlbLiveGamesRunning = true;
+schedule.scheduleJob('*/20 * * * * *', () => {
   const scriptPath = path.join(__dirname, 'dataControl/mlbLiveGames.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlb-live-${dateStr}.log`), { flags: 'a' });
@@ -143,7 +137,6 @@ schedule.scheduleJob('*/0 2 * * * *', () => {
     stdoutLog.write(message);
     stdoutLog.end();
     stderrLog.end();
-    mlbLiveGamesRunning = false;
   });
 });
 

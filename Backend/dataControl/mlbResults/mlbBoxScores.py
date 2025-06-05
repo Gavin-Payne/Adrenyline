@@ -93,23 +93,31 @@ def main():
             game_date = game.get("gameDate")
             eastern_game_date = get_eastern_game_date(game_date)
             home_team = game["teams"]["home"]["team"]["name"]
+            home_abbr = game["teams"]["home"]["team"].get("abbreviation")
             away_team = game["teams"]["away"]["team"]["name"]
+            away_abbr = game["teams"]["away"]["team"].get("abbreviation")
             try:
                 game_data = fetch_boxscore(game_pk)
                 boxscores = extract_boxscores(game_data)
                 for side, players in boxscores.items():
                     team = home_team if side == "home" else away_team
+                    team_abbr = home_abbr if side == "home" else away_abbr
+                    opponent = away_team if side == "home" else home_team
+                    opponent_abbr = away_abbr if side == "home" else home_abbr
                     for player in players:
                         doc = {
                             "gamePk": game_pk,
                             "gameDate": eastern_game_date,
                             "team": team,
-                            "opponent": away_team if side == "home" else home_team,
+                            "teamAbbr": team_abbr,
+                            "opponent": opponent,
+                            "opponentAbbr": opponent_abbr,
                             "side": side,
                             "playerName": player.get("name"),
                             "position": player.get("position", ""),
                             "type": player.get("type", ""),
-                            "stats": player
+                            "stats": player,
+                            "gameStatus": game_data.get("gameData", {}).get("status", {}).get("abstractGameState", "")
                         }
                         player_docs.append(doc)
                 print(f"Processed {len(boxscores['home']) + len(boxscores['away'])} players for game {game_pk}")

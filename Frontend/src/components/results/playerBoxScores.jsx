@@ -164,6 +164,7 @@ const PlayerBoxScores = ({ token }) => {
     { key: 'teamAbbr', label: 'Team' },
     { key: 'matchup', label: 'Matchup' },
     { key: 'date', label: 'Date' },
+    { key: 'gameStatus', label: 'Status' },
     { key: 'position', label: 'Pos' },
     { key: 'atBats', label: 'AB' },
     { key: 'hits', label: 'H' },
@@ -183,20 +184,32 @@ const PlayerBoxScores = ({ token }) => {
     { key: 'teamAbbr', label: 'Team' },
     { key: 'matchup', label: 'Matchup' },
     { key: 'date', label: 'Date' },
+    { key: 'gameStatus', label: 'Status' },
     { key: 'inningsPitched', label: 'IP' },
     { key: 'hitsAllowed', label: 'H' },
     { key: 'earnedRuns', label: 'ER' },
-    { key: 'strikeOuts', label: 'K' },         // Correct key
-    { key: 'baseOnBalls', label: 'BB' },       // Correct key for pitcher walks
+    { key: 'strikeOuts', label: 'K' },
+    { key: 'baseOnBalls', label: 'BB' },
     { key: 'pitchesThrown', label: 'Pitches' },
     { key: 'era', label: 'ERA' }
   ];
 
-  // Filter and sort MLB data for sub-tabs
-  const getSortedAndFilteredMlbData = () => {
-    let players = [...mlbBoxScores]; // Already flat
+  // Helper to get status label
+  const getGameStatus = (player) => {
+    const status = (player.gameStatus || '').toLowerCase();
+    if (status === 'final') return 'Final';
+    if (status === 'live') return 'Live';
+    if (status === 'delayed') return 'Delayed';
+    if (status === 'postponed') return 'Postponed';
+    if (status === 'scheduled') return 'Scheduled';
+    if (status) return status.charAt(0).toUpperCase() + status.slice(1);
+    if (player.gameFinished === true) return 'Final';
+    if (player.gameFinished === false) return 'Live';
+    return '';
+  };
 
-    // Sub-tab filter
+  const getSortedAndFilteredMlbData = () => {
+    let players = [...mlbBoxScores]; 
     if (mlbSubTab === 'pitchers') {
       players = players.filter(p => p.type === 'pitcher');
     } else {
@@ -603,7 +616,9 @@ const PlayerBoxScores = ({ token }) => {
                         <td key={col.key} style={{ padding: '12px 16px', textAlign: 'center' }}>
                           {col.key === 'era'
                             ? (player.era !== undefined && player.era !== null && player.era !== '' ? player.era : '-')
-                            : (player[col.key] !== undefined ? player[col.key] : '-')}
+                            : (col.key === 'gameStatus'
+                                ? getGameStatus(player)
+                                : (player[col.key] !== undefined ? player[col.key] : '-'))}
                         </td>
                       ))
                     )}
@@ -613,28 +628,6 @@ const PlayerBoxScores = ({ token }) => {
             </table>
           </div>
         )}
-      </div>
-      
-      {/* Results count */}
-      <div style={{
-        marginTop: '15px',
-        color: '#a0aec0',
-        fontSize: '0.9rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <div>
-          {!loading && !error && (
-            <>
-              Showing {sortedAndFilteredData.length} of {(activeTab === 'nba' ? nbaBoxScores.length : mlbBoxScores.length)} player{(activeTab === 'nba' ? nbaBoxScores.length : mlbBoxScores.length) !== 1 ? 's' : ''}
-            </>
-          )}
-        </div>
-        
-        <div>
-          Data updates daily
-        </div>
       </div>
     </div>
   );

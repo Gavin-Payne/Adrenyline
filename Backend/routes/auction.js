@@ -247,13 +247,7 @@ router.post('/processCompleted', verifyToken, async (req, res) => {
           if (!playerBoxScore) {
             continue;
           }
-          if (gameNumber) {
-            const boxGameNum = playerBoxScore.gameNumber || playerBoxScore.gameNum || playerBoxScore.game_number;
-            if (parseInt(boxGameNum) !== parseInt(gameNumber)) {
-              continue;
-            }
-          }
-          results.playerDataFound++;
+          const isGameFinished = playerBoxScore.gameFinished === true || playerBoxScore.gameStatus === 'Final';
           let actualValue = null;
           switch (auction.metric.toLowerCase()) {
             case 'hits':
@@ -281,9 +275,15 @@ router.post('/processCompleted', verifyToken, async (req, res) => {
           if (actualValue === null || actualValue === undefined) {
             continue;
           }
-          let winnerId = null;
           const condition = auction.condition.toLowerCase();
           const targetValue = auction.value;
+          // Only process if game is finished, or if over has already hit
+          if (!isGameFinished && !(condition === 'over' && actualValue > targetValue)) {
+            // Wait for game to finish unless over has already hit
+            continue;
+          }
+          results.playerDataFound++;
+          let winnerId = null;
           if (condition === 'over' && actualValue > targetValue) {
             winnerId = auction.user._id;
           } else if (condition === 'under' && actualValue < targetValue) {
