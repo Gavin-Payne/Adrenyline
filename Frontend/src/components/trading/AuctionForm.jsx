@@ -388,7 +388,7 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
       'blocks + steals': { min: 0.5, max: 30 },
       hits: { min: 0.5, max: 6.5 },
       walks: { min: 0.5, max: 5.5 },
-      strikeouts: { min: 0.5, max: 6.5 },
+      strikeouts: { min: 0.5, max: 15.5 },
       'total bases': { min: 0.5, max: 10.5 },
       steals: { min: 0.5, max: 4.5 },
       homeruns: { min: 0.5, max: 4.5 },
@@ -877,7 +877,7 @@ const AuctionForm = ({ onSubmit, userData, token }) => {
                 <div style={balanceAmountContainerStyle}>
                   <img 
                     src={betType === 'premium' ? premiumIcon : commonIcon}
-                    alt={betType === 'premium' ? 'Imperium' : 'Credits'}
+                    alt={betType === 'premium' ? 'ALU' : 'SBM'}
                     style={currencyIconStyle}
                   />
                   <span>

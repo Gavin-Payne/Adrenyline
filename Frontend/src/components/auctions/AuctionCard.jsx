@@ -120,7 +120,7 @@ const AuctionCard = ({
   };
   const theme = getTheme();
   const getConditionDisplay = () => {
-    switch(condition.toLowerCase()) {
+    switch(displayCondition.toLowerCase()) {
       case 'over': return <FaCaretUp style={{color: '#4ADE80'}} />;
       case 'under': return <FaCaretDown style={{color: '#F87171'}} />;
       case 'exactly': return "=";

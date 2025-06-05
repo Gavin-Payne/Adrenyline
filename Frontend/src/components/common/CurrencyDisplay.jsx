@@ -21,7 +21,7 @@ const CurrencyDisplay = ({
 
   const actualType = type === 'silver' ? 'common' : type === 'gold' ? 'premium' : type;
   const icon = actualType === 'premium' ? premiumIcon : commonIcon;
-  const name = actualType === 'premium' ? 'Imperium' : 'Credits';
+  const name = actualType === 'premium' ? 'ALU' : 'SBM';
   const iconSizes = {
     small: '14px',
     medium: '18px',
