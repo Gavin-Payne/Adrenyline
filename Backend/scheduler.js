@@ -114,7 +114,7 @@ let mlbLiveGamesRunning = false;
 let mlbBoxScoresRunning = false;
 let mlbGamesRunning = false;
 
-schedule.scheduleJob('*/50 * * * * *', () => {
+schedule.scheduleJob('*/0 2 * * * *', () => {
   if (mlbLiveGamesRunning) {
     console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB live games script is still running, skipping this cycle.`);
     return;
