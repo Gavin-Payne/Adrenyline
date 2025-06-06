@@ -73,13 +73,15 @@ router.post('/buy/:id', verifyToken, async (req, res) => {
     }
     const currencyType = auction.betType;
     const betAmount = auction.betSize;
-    if (buyer[currencyType] < betAmount) {
+    const totalPot = auction.betSize * auction.multiplier;
+    const buyerPays = totalPot - betAmount;
+    if (buyer[`${currencyType}`] < buyerPays) {
       return res.status(400).json({ success: false, message: `You don't have enough ${currencyType === 'gold' ? 'ALU' : 'SBM'} to buy this auction` });
     }
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-      buyer[currencyType] -= betAmount;
+      buyer[`${currencyType}`] -= buyerPays;
       auction.soldTo = buyerId;
       await buyer.save({ session });
       await auction.save({ session });
