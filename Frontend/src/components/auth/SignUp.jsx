@@ -13,6 +13,11 @@ function SignUp({ setToken }) {
   const [focusedField, setFocusedField] = useState(null);
   const [formStage, setFormStage] = useState(0);
 
+  const [showGoogleOnboarding, setShowGoogleOnboarding] = useState(false);
+  const [googleCredential, setGoogleCredential] = useState(null);
+  const [googleUsername, setGoogleUsername] = useState('');
+  const [googlePassword, setGooglePassword] = useState('');
+
   const hasMinLength = password.length >= 6;
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
@@ -103,6 +108,28 @@ function SignUp({ setToken }) {
       setErrorMessage(error.message || 'Error creating account');
       setLoading(false);
     }
+  };
+
+  const handleGoogleOnboarding = async (credential) => {
+    setShowGoogleOnboarding(true);
+    setGoogleCredential(credential);
+  };
+
+  const completeGoogleOnboarding = async () => {
+    setErrorMessage('');
+    setLoading(true);
+    try {
+      const response = await authService.completeGoogleOnboarding(
+        googleCredential,
+        googleUsername,
+        googlePassword
+      );
+      setToken(response.token);
+      setShowGoogleOnboarding(false);
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to complete onboarding');
+    }
+    setLoading(false);
   };
 
   return (
@@ -395,16 +422,38 @@ function SignUp({ setToken }) {
            loading === 'success' ? 'Success!' : 
            formStage === 0 ? 'Continue' : 'Create Account'}
         </motion.button>
-        
-        <motion.p 
-          style={footerTextStyle}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-        >
-          Already have an account? <span style={footerLinkStyle}>Sign In</span>
-        </motion.p>
       </motion.form>
+      {showGoogleOnboarding && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ background: '#23263a', padding: 32, borderRadius: 12, minWidth: 320 }}>
+            <h3 style={{ color: '#fff', marginBottom: 16 }}>Complete Your Account</h3>
+            <input
+              type="text"
+              placeholder="Choose a username"
+              value={googleUsername}
+              onChange={e => setGoogleUsername(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="password"
+              placeholder="Set a password (optional)"
+              value={googlePassword}
+              onChange={e => setGooglePassword(e.target.value)}
+              style={inputStyle}
+            />
+            <button
+              style={buttonStyle}
+              onClick={completeGoogleOnboarding}
+              disabled={loading}
+            >
+              Complete Registration
+            </button>
+            {errorMessage && <div style={{ color: '#f87171', marginTop: 8 }}>{errorMessage}</div>}
+          </div>
+        </div>
+      )}
       
       <style>{`
         @keyframes spin {

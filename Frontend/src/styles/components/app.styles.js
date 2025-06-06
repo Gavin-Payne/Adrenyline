@@ -28,7 +28,7 @@ export const darkContainerStyle = {
 export const darkSubscriptButtonStyle = {
   border: 'none',
   background: 'none',
-  color: colors.primary,
+  color: '#94a3b8',
   cursor: 'pointer',
   textDecoration: 'underline',
   fontSize: '0.9em',

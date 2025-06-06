@@ -5,6 +5,9 @@ require('dotenv').config();
 const User = require('../models/Users');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
+const { OAuth2Client } = require('google-auth-library');
+const crypto = require('crypto');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 if (!JWT_SECRET) {
@@ -82,7 +85,6 @@ router.post(
     }
   );
 
-// Add this route for login with username or email
 router.post('/login', async (req, res) => {
   try {
     const { usernameOrEmail, password } = req.body;
@@ -91,7 +93,6 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Username/email and password are required' });
     }
 
-    // Find user by username or email
     const user = await User.findOne({
       $or: [
         { username: usernameOrEmail },
@@ -103,13 +104,11 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Verify password
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate token
     const token = jwt.sign(
       { id: user._id },
       JWT_SECRET,
@@ -123,7 +122,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Update the registration endpoint to include email
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -147,21 +145,18 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
-      silver: 1000,  // Starting currency
+      silver: 1000, 
       gold: 100
     });
 
     await newUser.save();
 
-    // Generate token for automatic login
     const token = jwt.sign(
       { id: newUser._id },
       JWT_SECRET,
@@ -192,8 +187,6 @@ router.post('/google-signin', async (req, res) => {
     if (!credential) {
       return res.status(400).json({ message: 'Google credential is required' });
     }
-
-    // Verify Google token
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
@@ -201,29 +194,25 @@ router.post('/google-signin', async (req, res) => {
     
     const payload = ticket.getPayload();
     const { email, name, sub: googleId } = payload;
-    
-    // Check if user exists
+
     let user = await User.findOne({ email });
     
     if (!user) {
-      // Create new user if it doesn't exist
       user = new User({
         username: name.replace(/\s+/g, '') + Math.floor(Math.random() * 1000), // Generate username from name
         email,
         googleId,
         password: await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10), // Random password
-        silver: 1000, // Starting currencies
+        silver: 1000,
         gold: 100
       });
       
       await user.save();
     } else if (!user.googleId) {
-      // Update existing user with googleId if they didn't have one
       user.googleId = googleId;
       await user.save();
     }
-    
-    // Generate token
+
     const token = jwt.sign(
       { id: user._id },
       JWT_SECRET,
@@ -238,6 +227,47 @@ router.post('/google-signin', async (req, res) => {
   }
 });
 
-// Export both router and blacklist
+router.post('/google-onboarding', async (req, res) => {
+  try {
+    const { credential, username, password } = req.body;
+    if (!credential || !username) {
+      return res.status(400).json({ message: 'Google credential and username are required' });
+    }
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    const { email, sub: googleId } = payload;
+    // Check if username or email already exists
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      return res.status(400).json({ message: 'Username must be 3-20 characters, alphanumeric or underscores only.' });
+    }
+    const existingUser = await User.findOne({ $or: [ { username }, { email } ] });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Username or email already exists' });
+    }
+    // Password complexity: at least 6 chars, 1 uppercase, 1 number (required)
+    if (!password || password.length < 6 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters, include an uppercase letter and a number.' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      googleId,
+      password: hashedPassword,
+      silver: 1000,
+      gold: 100
+    });
+    await newUser.save();
+    // Generate token
+    const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: '24h' });
+    res.status(201).json({ token, message: 'Account created via Google' });
+  } catch (error) {
+    console.error('Google onboarding error:', error);
+    res.status(500).json({ message: 'Google onboarding failed' });
+  }
+});
 router.tokenBlacklist = tokenBlacklist;
 module.exports = router;

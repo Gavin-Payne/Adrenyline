@@ -37,6 +37,19 @@ export const authService = {
     }
   },
 
+  async completeGoogleOnboarding(credential, username, password) {
+    try {
+      const response = await api.post('/auth/google-onboarding', {
+        credential,
+        username,
+        password,
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Google onboarding failed');
+    }
+  },
+
   logout() {
     // Clear any stored tokens or user data
     localStorage.removeItem('token');

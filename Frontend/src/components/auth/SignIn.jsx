@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { authService } from '../../services/authService';
 import { GoogleLogin } from '@react-oauth/google';
 import { FaGoogle, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
@@ -10,6 +11,13 @@ function SignIn({ setToken }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [focusedField, setFocusedField] = useState(null);
+
+  const [showGoogleOnboarding, setShowGoogleOnboarding] = useState(false);
+  const [googleCredential, setGoogleCredential] = useState(null);
+  const [googleUsername, setGoogleUsername] = useState('');
+  const [googlePassword, setGooglePassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState('');
+  const [passwordStrengthColor, setPasswordStrengthColor] = useState('#f87171');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,15 +54,194 @@ function SignIn({ setToken }) {
         setToken(response.token);
       }, 1000);
     } catch (error) {
-      console.error('Google sign-in error:', error);
-      setError(error.message || 'Google sign in failed. Please try again.');
-      setLoading(false);
+      if (
+        error.message &&
+        error.message.toLowerCase().includes('username required')
+      ) {
+        setGoogleCredential(credentialResponse.credential);
+        setShowGoogleOnboarding(true);
+        setLoading(false);
+      } else {
+        setError(error.message || 'Google sign in failed. Please try again.');
+        setLoading(false);
+      }
     }
   };
 
   const handleGoogleFailure = () => {
     setError('Google sign in failed. Please try again or use email/password.');
   };
+
+  const completeGoogleOnboarding = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const response = await authService.completeGoogleOnboarding(
+        googleCredential,
+        googleUsername,
+        googlePassword
+      );
+      setToken(response.token);
+      setShowGoogleOnboarding(false);
+    } catch (err) {
+      setError(err.message || 'Failed to complete onboarding');
+    }
+    setLoading(false);
+  };
+
+  // Password strength checker
+  const checkPasswordStrength = (pwd) => {
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    if (pwd.length >= 10) score++;
+    switch (score) {
+      case 0:
+      case 1:
+        setPasswordStrength('Very Weak');
+        setPasswordStrengthColor('#f87171');
+        break;
+      case 2:
+        setPasswordStrength('Weak');
+        setPasswordStrengthColor('#fbbf24');
+        break;
+      case 3:
+        setPasswordStrength('Medium');
+        setPasswordStrengthColor('#facc15');
+        break;
+      case 4:
+        setPasswordStrength('Strong');
+        setPasswordStrengthColor('#34d399');
+        break;
+      case 5:
+        setPasswordStrength('Very Strong');
+        setPasswordStrengthColor('#22c55e');
+        break;
+      default:
+        setPasswordStrength('');
+        setPasswordStrengthColor('#f87171');
+    }
+  };
+
+  // Google Onboarding Modal as Portal
+  const GoogleOnboardingModal = showGoogleOnboarding ? createPortal(
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(30,32,48,0.75)',
+      zIndex: 1000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      minWidth: '100vw',
+      overflow: 'auto',
+    }}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+        style={{
+          background: 'linear-gradient(135deg, #23263a 80%, #6366F1 100%)',
+          padding: 40,
+          borderRadius: 22,
+          minWidth: 370,
+          boxShadow: '0 8px 32px 0 rgba(99,102,241,0.22), 0 2px 8px 0 rgba(0,0,0,0.18)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          border: '1.5px solid #6366F1',
+          position: 'relative',
+        }}
+      >
+        <div style={{
+          width: 54, height: 54, borderRadius: '50%', background: 'rgba(99,102,241,0.13)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
+        }}>
+          <FaGoogle size={28} color="#fff" />
+        </div>
+        <h3 style={{ color: '#fff', marginBottom: 10, fontWeight: 700, fontSize: '1.25em', letterSpacing: 0.5, textAlign: 'center' }}>
+          Complete Your Google Account
+        </h3>
+        <p style={{ color: '#c7d2fe', fontSize: '1em', marginBottom: 18, textAlign: 'center', maxWidth: 320 }}>
+          Choose a unique username and a strong password to finish setting up your account.
+        </p>
+        <input
+          type="text"
+          placeholder="Choose a username"
+          value={googleUsername}
+          onChange={e => setGoogleUsername(e.target.value)}
+          style={{ ...inputStyle, marginBottom: 14, background: '#23263a', border: '1.5px solid #6366F1', borderRadius: 10, color: '#fff', fontWeight: 500, fontSize: '1.05em' }}
+          autoFocus
+        />
+        <input
+          type="password"
+          placeholder="Set a password (required)"
+          value={googlePassword}
+          onChange={e => {
+            setGooglePassword(e.target.value);
+            checkPasswordStrength(e.target.value);
+          }}
+          style={{ ...inputStyle, marginBottom: 6, background: '#23263a', border: '1.5px solid #6366F1', borderRadius: 10, color: '#fff', fontWeight: 500, fontSize: '1.05em' }}
+        />
+        <div style={{ width: '100%', marginBottom: 8 }}>
+          <div style={{ height: 7, borderRadius: 5, background: '#23263a', marginBottom: 3, overflow: 'hidden' }}>
+            <div style={{
+              width: googlePassword ? `${Math.min((googlePassword.length/12)*100, 100)}%` : '0%',
+              height: '100%',
+              background: passwordStrengthColor,
+              transition: 'width 0.3s, background 0.3s',
+            }} />
+          </div>
+          <span style={{ color: passwordStrengthColor, fontWeight: 600, fontSize: '0.97em' }}>
+            {googlePassword && `Password strength: ${passwordStrength}`}
+          </span>
+        </div>
+        <div style={{ color: '#c7d2fe', fontSize: '0.97em', marginBottom: 12, textAlign: 'center' }}>
+          Password must be at least 6 characters, include 1 uppercase letter, and 1 number.
+        </div>
+        <button
+          style={{
+            ...buttonStyle,
+            marginTop: 8,
+            marginBottom: 4,
+            width: '100%',
+            fontSize: '1.08em',
+            borderRadius: 10,
+            background: loading ? '#6366F1cc' : '#6366F1',
+            boxShadow: '0 2px 8px rgba(99,102,241,0.13)',
+          }}
+          onClick={completeGoogleOnboarding}
+          disabled={loading || !googleUsername || !googlePassword}
+        >
+          {loading ? 'Completing...' : 'Complete Registration'}
+        </button>
+        {error && <div style={{ color: '#f87171', marginTop: 8, textAlign: 'center' }}>{error}</div>}
+        <button
+          onClick={() => setShowGoogleOnboarding(false)}
+          style={{
+            marginTop: 10,
+            background: 'none',
+            border: 'none',
+            color: '#94a3b8',
+            fontSize: '0.98em',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+            opacity: 0.85,
+          }}
+        >
+          Cancel
+        </button>
+      </motion.div>
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <motion.div 
@@ -253,15 +440,9 @@ function SignIn({ setToken }) {
           />
         </motion.div>
         
-        <motion.p 
-          style={footerTextStyle}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-        >
-          First time here? <span style={footerLinkStyle}>Create an account</span>
-        </motion.p>
       </motion.form>
+
+      {GoogleOnboardingModal}
       
       <style>{`
         @keyframes spin {
