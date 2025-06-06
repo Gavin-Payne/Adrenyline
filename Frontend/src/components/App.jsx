@@ -34,7 +34,8 @@ function App() {
     token, 
     userData, 
     login, 
-    logout 
+    logout, 
+    refreshUserData
   } = useAuth();
 
   const {
@@ -53,6 +54,7 @@ function App() {
 
   const [activeTab, setActiveTab] = useState(0);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [forceShowTutorial, setForceShowTutorial] = useState(false);
 
   // Render the appropriate content based on selected tab
   const renderTabContent = () => {
@@ -142,6 +144,9 @@ function App() {
           <TutorialManager 
             activeTab={activeTab} 
             onChangeTab={setActiveTab} 
+            forceShow={forceShowTutorial}
+            userData={userData}
+            refreshUserData={refreshUserData}
           />
         </>
       ) : (

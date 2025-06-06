@@ -5,7 +5,7 @@ import { authService } from '../../services/authService';
 import { GoogleLogin } from '@react-oauth/google';
 import { FaGoogle, FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
 
-function SignIn({ setToken }) {
+function SignIn({ setToken, onGoogleOnboardingComplete }) {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,6 +83,7 @@ function SignIn({ setToken }) {
       );
       setToken(response.token);
       setShowGoogleOnboarding(false);
+      if (onGoogleOnboardingComplete) onGoogleOnboardingComplete();
     } catch (err) {
       setError(err.message || 'Failed to complete onboarding');
     }

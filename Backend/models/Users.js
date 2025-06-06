@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
   lastDailyAllowance: {
     type: Date,
     default: null
+  },
+  tutorialCompleted: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 

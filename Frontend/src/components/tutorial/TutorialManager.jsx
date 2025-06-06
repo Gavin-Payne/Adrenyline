@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import Tutorial from './Tutorial';
 
-// Add default values for props to prevent errors
-const TutorialManager = ({ onChangeTab = () => {}, activeTab = 0 }) => {
+const TutorialManager = ({ onChangeTab = () => {}, activeTab = 0, forceShow = false, userData, refreshUserData }) => {
   const [showTutorial, setShowTutorial] = useState(false);
-  
+
   useEffect(() => {
-    // Check if this is the user's first time
-    const tutorialCompleted = localStorage.getItem('tutorialCompleted');
-    if (!tutorialCompleted) {
-      // Show tutorial after a short delay to let the app load
+    if (forceShow) {
+      setShowTutorial(true);
+      return;
+    }
+    if (userData && userData.tutorialCompleted === false) {
       const timer = setTimeout(() => {
         setShowTutorial(true);
       }, 1000);
-      
       return () => clearTimeout(timer);
     }
-  }, []);
-  
-  const handleCompleteTutorial = () => {
-    localStorage.setItem('tutorialCompleted', 'true');
+  }, [forceShow, userData]);
+
+  const handleCompleteTutorial = async () => {
     setShowTutorial(false);
+    try {
+      await import('../../services/userService').then(({ userService }) => userService.setTutorialCompleted());
+      if (refreshUserData) await refreshUserData();
+    } catch (err) {
+      console.error('Failed to mark tutorial as completed:', err);
+    }
   };
-  
+
   useEffect(() => {
     const style = document.createElement('style');
     style.innerHTML = `

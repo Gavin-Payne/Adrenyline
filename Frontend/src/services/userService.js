@@ -19,5 +19,15 @@ export const userService = {
       console.error("Error claiming daily allowance:", error);
       throw error.response?.data || error.message;
     }
+  },
+
+  setTutorialCompleted: async () => {
+    try {
+      const response = await api.post('/user/tutorialCompleted');
+      return response.data;
+    } catch (error) {
+      console.error('Error setting tutorial completed:', error);
+      throw error.response?.data || error.message;
+    }
   }
 };

@@ -59,5 +59,5 @@ export const useAuth = () => {
     }
   };
 
-  return { token, userData, login, logout, handleDailyAllowance, loading, error };
+  return { token, userData, login, logout, handleDailyAllowance, loading, error, refreshUserData: fetchUserData };
 };
