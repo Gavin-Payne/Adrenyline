@@ -278,10 +278,8 @@ router.post('/processCompleted', verifyToken, async (req, res) => {
             continue;
           }
           const condition = auction.condition.toLowerCase();
-          const targetValue = auction.value;
-          // Only process if game is finished, or if over has already hit
-          if (!isGameFinished && !(condition === 'over' && actualValue > targetValue)) {
-            // Wait for game to finish unless over has already hit
+          const targetValue = Number(auction.value);
+          if (!isGameFinished && !(actualValue > targetValue)) {
             continue;
           }
           results.playerDataFound++;
