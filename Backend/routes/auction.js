@@ -249,7 +249,7 @@ router.post('/processCompleted', verifyToken, async (req, res) => {
           if (!playerBoxScore) {
             continue;
           }
-          const isGameFinished = playerBoxScore.gameFinished === true || playerBoxScore.gameStatus === 'Final';
+          const isGameFinished = playerBoxScore.gameStatus !== 'Live';
           let actualValue = null;
           switch (auction.metric.toLowerCase()) {
             case 'hits':
