@@ -113,7 +113,7 @@ schedule.scheduleJob('*/2 * * * *', () => {
 let mlbBoxScoresRunning = false;
 let mlbGamesRunning = false;
 
-schedule.scheduleJob('*/50 * * * * *', () => {
+schedule.scheduleJob('*/20 * * * * *', () => {
   const scriptPath = path.join(__dirname, 'dataControl/mlbLiveGames.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlb-live-${dateStr}.log`), { flags: 'a' });
