@@ -113,7 +113,7 @@ schedule.scheduleJob('*/2 * * * *', () => {
 let mlbBoxScoresRunning = false;
 let mlbGamesRunning = false;
 
-schedule.scheduleJob('*/20 * * * * *', () => {
+schedule.scheduleJob('*/50 * * * * *', () => {
   const scriptPath = path.join(__dirname, 'dataControl/mlbLiveGames.py');
   const dateStr = moment().format('YYYY-MM-DD');
   const stdoutLog = fs.createWriteStream(path.join(logsDir, `mlb-live-${dateStr}.log`), { flags: 'a' });
@@ -140,7 +140,7 @@ schedule.scheduleJob('*/20 * * * * *', () => {
   });
 });
 
-schedule.scheduleJob('*/2 * * * *', () => {
+schedule.scheduleJob('*/10 * * * *', () => {
   if (mlbBoxScoresRunning) {
     console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] MLB box scores script is still running, skipping this cycle.`);
     return;
