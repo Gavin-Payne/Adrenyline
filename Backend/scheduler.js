@@ -337,7 +337,7 @@ async function processCompletedAuctions() {
             
             auction.completed = true;
             auction.completedAt = new Date();
-            auction.winner = null; // No winner in a tie
+            auction.winner = null;
             auction.actualValue = actualValue;
             auction.refunded = true;
 
@@ -395,22 +395,41 @@ async function processCompletedAuctions() {
           await auction.user.save();
           await auction.soldTo.save();
         } else {
+
           console.log(`${logPrefix} MLB auction processing: ${auction._id} for ${auction.player}`);
 
           const db = mongoose.connection.useDb('sportsAH');
           const collection = db.collection('mlb_player_box_scores');
-          const searchDate = gameDate.toISOString().split('T')[0]; 
+          const searchDate = gameDate.toISOString().split('T')[0];
+          let gameNumber = auction.gameNumber || auction.gameNum || auction.game_number || null;
 
-          const playerBoxScore = await collection.findOne({
+          const boxScoreQuery = {
             playerName: { $regex: new RegExp(`^${auction.player}$`, 'i') },
             gameDate: { $regex: `^${searchDate}` }
-          });
+          };
+          if (gameNumber) {
+            boxScoreQuery.$or = [
+              { gameNumber: gameNumber },
+              { gameNum: gameNumber },
+              { game_number: gameNumber }
+            ];
+          }
+
+          const playerBoxScore = await collection.findOne(boxScoreQuery);
 
           if (!playerBoxScore) {
-            console.log(`No MLB box score found for player ${auction.player} on ${searchDate}`);
+            console.log(`${logPrefix} No MLB box score found for player ${auction.player} on ${searchDate}`);
             continue;
           }
           
+          console.log(`${logPrefix} MLB playerBoxScore for ${auction.player} on ${searchDate}:`, JSON.stringify(playerBoxScore));
+
+          const gameStatus = playerBoxScore.gameStatus;
+          if (gameStatus === 'Live') {
+            console.log(`${logPrefix} MLB game is still Live for ${auction.player} on ${searchDate}, skipping auction ${auction._id}`);
+            continue;
+          }
+
           playerDataFound++;
           let actualValue = null;
           switch (auction.metric.toLowerCase()) {
@@ -439,8 +458,7 @@ async function processCompletedAuctions() {
             case 'pitching outs':
               const inningString = playerBoxScore.stats.inningsPitched || "0";
               const fullInnings = parseInt(inningString);
-              const partialInning = inningString.includes('.') ? 
-                parseInt(inningString.split('.')[1]) : 0;
+              const partialInning = inningString.includes('.') ? parseInt(inningString.split('.')[1]) : 0;
               actualValue = (fullInnings * 3) + partialInning;
               break;
             default:
