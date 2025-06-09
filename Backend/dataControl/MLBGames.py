@@ -132,7 +132,8 @@ for section in lineup_sections:
             "game_park": game_park
         })
 game_counts = {}
-today_str = datetime.now().strftime("%Y-%m-%d")
+pacific = pytz.timezone('US/Pacific')
+today_str = datetime.now(pacific).strftime("%Y-%m-%d")
 all_games_db_name = "MLBGames.db"
 all_games_db_path = os.path.join(DB_DIR, all_games_db_name)
 MONGO_URI = os.getenv('MONGO_URI')

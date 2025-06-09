@@ -37,7 +37,7 @@ const Layout = ({ children, token, userData, onLogout, currentTab, onTabChange }
       <header style={headerStyle}>
         <div>
           <h3 style={{ margin: 0, fontSize: '1.2em' }}>
-            Imperium
+            Adrenyline
           </h3>
         </div>
         

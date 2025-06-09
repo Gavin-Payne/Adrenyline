@@ -170,7 +170,7 @@ function App() {
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-            }}>Imperium</h1>
+            }}>Adrenyline</h1>
             <div style={{
               ...darkContainerStyle,
               backgroundColor: 'rgba(28, 28, 40, 0.7)',

@@ -23,7 +23,7 @@ const Tutorial = ({ onComplete, onChangeTab, activeTab }) => {
   const steps = [
     // Welcome and introduction
     {
-      title: "Welcome to Imperium",
+      title: "Welcome to Adrenyline",
       description: "Your gateway to sports prediction markets. Make predictions on player performances and win rewards based on real-world sports outcomes.",
       icon: <FaTrophy style={{ fontSize: '48px', color: '#6366F1' }} />,
       tab: 0,
@@ -34,7 +34,7 @@ const Tutorial = ({ onComplete, onChangeTab, activeTab }) => {
       title: "Dual Currency System",
       description: (
         <div>
-          <p>Imperium uses two market-driven currencies:</p>
+          <p>Adrenyline uses two market-driven currencies:</p>
           <div style={styles.currencyContainer}>
             <div style={styles.currencyItem}>
               <img src={commonIcon} alt="SBM" style={styles.currencyIcon} />
@@ -185,7 +185,7 @@ const Tutorial = ({ onComplete, onChangeTab, activeTab }) => {
       title: "Ready to Start Trading",
       description: (
         <div>
-          <p>You're all set to start making predictions in Imperium!</p>
+          <p>You're all set to start making predictions in Adrenyline!</p>
           <p>Remember:</p>
           <ul style={styles.featureList}>
             <li>Collect your daily rewards from the Dashboard</li>
@@ -193,7 +193,7 @@ const Tutorial = ({ onComplete, onChangeTab, activeTab }) => {
             <li>Buy others' predictions in the Auction House</li>
             <li>Track your positions in Active Auctions</li>
           </ul>
-          <p style={styles.disclaimer}>Imperium is a prediction market for entertainment purposes only. All in-game currencies have no real-world value.</p>
+          <p style={styles.disclaimer}>Adrenyline is a prediction market for entertainment purposes only. All in-game currencies have no real-world value.</p>
         </div>
       ),
       icon: <FaCheckCircle style={{ fontSize: '48px', color: '#10B981' }} />,

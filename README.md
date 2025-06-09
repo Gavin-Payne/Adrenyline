@@ -1,7 +1,7 @@
 
-# Imperium: Sports Prediction Market App
+# Adrenyline: Sports Prediction Market App
 
-Imperium is a full-stack web application that gamifies sports predictions using a dual-currency system, real-time data, and a social trading marketplace. Users can create, buy, and track predictions on player performances, leveraging real-world sports outcomes for in-game rewards.
+Adrenyline is a full-stack web application that gamifies sports predictions using a dual-currency system, real-time data, and a social trading marketplace. Users can create, buy, and track predictions on player performances, leveraging real-world sports outcomes for in-game rewards.
 
 ---
 

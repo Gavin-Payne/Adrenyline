@@ -3,7 +3,7 @@ import React from 'react';
 const Header = ({ onLogout }) => {
   return (
     <header style={headerStyle}>
-      <h1 style={titleStyle}>Imperium</h1>
+      <h1 style={titleStyle}>Adrenyline</h1>
       <button onClick={onLogout} style={logoutButtonStyle}>
         <span style={logoutIconStyle}>⎋</span>
       </button>
