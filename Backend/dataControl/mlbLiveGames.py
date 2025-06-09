@@ -8,6 +8,7 @@ import concurrent.futures
 from datetime import datetime
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from pytz import timezone
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,7 +41,9 @@ class MLBLiveGamesAPI:
         return response.json()
 
     def process_live_games(self):
-        today = datetime.now().strftime("%Y-%m-%d")
+        # Use Pacific Time for today's date
+        pacific = timezone('US/Pacific')
+        today = datetime.now(pacific).strftime("%Y-%m-%d")
         scoreboard = self.fetch_scoreboard(today)
         if not scoreboard or "dates" not in scoreboard or not scoreboard["dates"]:
             return
@@ -155,7 +158,6 @@ class MLBLiveGamesAPI:
                     "pfxX": pitch_data.get("pfxX", None),
                     "pfxZ": pitch_data.get("pfxZ", None),
                     "plateTime": pitch_data.get("plateTime", None),
-                    # Added pitch result fields below
                     "result": details.get("event", ""),
                     "resultCode": details.get("code", ""),
                     "description": details.get("description", ""),
