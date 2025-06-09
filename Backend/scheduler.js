@@ -402,20 +402,25 @@ async function processCompletedAuctions() {
           const collection = db.collection('mlb_player_box_scores');
           const searchDate = gameDate.toISOString().split('T')[0];
           let gameNumber = auction.gameNumber || auction.gameNum || auction.game_number || null;
-
-          const boxScoreQuery = {
+          let boxScoreQuery = {
             playerName: { $regex: new RegExp(`^${auction.player}$`, 'i') },
             gameDate: { $regex: `^${searchDate}` }
           };
-          if (gameNumber) {
+          let playerBoxScore = null;
+          if (gameNumber && gameNumber !== 1) {
             boxScoreQuery.$or = [
               { gameNumber: gameNumber },
               { gameNum: gameNumber },
               { game_number: gameNumber }
             ];
+            playerBoxScore = await collection.findOne(boxScoreQuery);
+            if (!playerBoxScore) {
+              delete boxScoreQuery.$or;
+              playerBoxScore = await collection.findOne(boxScoreQuery);
+            }
+          } else {
+            playerBoxScore = await collection.findOne(boxScoreQuery);
           }
-
-          const playerBoxScore = await collection.findOne(boxScoreQuery);
 
           if (!playerBoxScore) {
             console.log(`${logPrefix} No MLB box score found for player ${auction.player} on ${searchDate}`);
