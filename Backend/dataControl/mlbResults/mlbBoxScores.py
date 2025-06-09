@@ -11,7 +11,9 @@ import pytz
 load_dotenv()
 
 def get_today_str():
-    return datetime.now().strftime("%Y-%m-%d")
+    pacific = pytz.timezone('US/Pacific')
+    now_pacific = datetime.now(pacific)
+    return now_pacific.strftime("%Y-%m-%d")
 
 def fetch_mlb_schedule(date_str):
     url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date_str}"

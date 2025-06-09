@@ -10,8 +10,9 @@ const PlayerBoxScores = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [date, setDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const pacific = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+    const pacificDate = new Date(pacific);
+    return pacificDate.toISOString().split('T')[0]; 
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
