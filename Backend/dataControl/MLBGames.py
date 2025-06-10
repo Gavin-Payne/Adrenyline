@@ -144,14 +144,16 @@ db = client['mlb']
 games_collection = db['games']
 for game in games_today:
     base_name = f"{game['team1'].replace(' ', '')}VS{game['team2'].replace(' ', '')}"
-    count = game_counts.get(base_name, 0) + 1
-    game_counts[base_name] = count
-    game_id = f"{base_name}{count if count > 1 else ''}_{today_str}"
+    parsed_game_date = game.get('game_date') or today_str
+    count_key = f"{base_name}_{parsed_game_date}"
+    count = game_counts.get(count_key, 0) + 1
+    game_counts[count_key] = count
+    game_id = f"{base_name}{count if count > 1 else ''}_{parsed_game_date}"
     team1_batters = (game['team1_batters'] + [""] * 9)[:9]
     team2_batters = (game['team2_batters'] + [""] * 9)[:9]
     doc = {
         "game_id": game_id,
-        "date": game.get('game_date', today_str),
+        "date": parsed_game_date,
         "team1": game['team1'],
         "team2": game['team2'],
         "team1_batters": team1_batters,
@@ -159,8 +161,28 @@ for game in games_today:
         "team1_pitcher": game['team1_pitcher'],
         "team2_pitcher": game['team2_pitcher'],
         "game_time": game.get('game_time', ''),
-        "game_date": game.get('game_date', today_str),
+        "game_date": parsed_game_date,
         "game_park": game.get('game_park', '')
     }
     games_collection.replace_one({"game_id": game_id}, doc, upsert=True)
     print(f"DEBUG: Upserted game_id {game_id}")
+
+pipeline = [
+    {"$group": {
+        "_id": {
+            "date": "$date",
+            "team1": "$team1",
+            "team2": "$team2",
+            "game_time": "$game_time"
+        },
+        "ids": {"$push": "$_id"},
+        "count": {"$sum": 1}
+    }},
+    {"$match": {"count": {"$gt": 1}}}
+]
+duplicates = list(games_collection.aggregate(pipeline))
+for dup in duplicates:
+    ids = sorted(dup["ids"], reverse=True)
+    for old_id in ids[1:]:
+        games_collection.delete_one({"_id": old_id})
+        print(f"Removed true duplicate game with _id {old_id} for {dup['_id']}")

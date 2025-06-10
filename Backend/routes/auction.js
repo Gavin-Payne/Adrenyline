@@ -17,13 +17,31 @@ MongoClient.connect(mongoUri, { useUnifiedTopology: true }).then(client => {
 router.post('/', verifyToken, async (req, res) => {
   try {
     const { game, player, date, gameDate, condition, value, metric, duration, betSize, betType, multiplier, sport, sportCategory } = req.body;
-    const expirationTime = new Date(Date.now() + duration * 60000);
-    const auctionDate = new Date();
-    const actualGameDate = gameDate ? new Date(gameDate) : new Date(date);
+    // Require all fields
+    const missingFields = [];
+    if (!game) missingFields.push('game');
+    if (!player || typeof player !== 'string' || player.trim() === '') missingFields.push('player');
+    if (!date) missingFields.push('date');
+    if (!gameDate) missingFields.push('gameDate');
+    if (!condition) missingFields.push('condition');
+    if (value === undefined || value === null) missingFields.push('value');
+    if (!metric) missingFields.push('metric');
+    if (!duration) missingFields.push('duration');
+    if (!betSize) missingFields.push('betSize');
+    if (!betType) missingFields.push('betType');
+    if (!multiplier) missingFields.push('multiplier');
+    if (!sport) missingFields.push('sport');
+    if (!sportCategory) missingFields.push('sportCategory');
     let gameNumber = 1;
     if (typeof game === 'string' && /\(Game 2\)/i.test(game)) {
       gameNumber = 2;
     }
+    if (missingFields.length > 0) {
+      return res.status(400).json({ success: false, message: `Missing required field(s): ${missingFields.join(', ')}` });
+    }
+    const expirationTime = new Date(Date.now() + duration * 60000);
+    const auctionDate = new Date();
+    const actualGameDate = gameDate ? new Date(gameDate) : new Date(date);
     const newAuction = new Auction({
       user: req.user.id,
       game,
@@ -416,6 +434,23 @@ router.post('/create', verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
     const { date, gameDate, game, player, condition, value, metric, betSize, betType, multiplier, duration, sport, sportCategory } = req.body;
+    const missingFields = [];
+    if (!game) missingFields.push('game');
+    if (!player || typeof player !== 'string' || player.trim() === '') missingFields.push('player');
+    if (!date) missingFields.push('date');
+    if (!gameDate) missingFields.push('gameDate');
+    if (!condition) missingFields.push('condition');
+    if (value === undefined || value === null) missingFields.push('value');
+    if (!metric) missingFields.push('metric');
+    if (!duration) missingFields.push('duration');
+    if (!betSize) missingFields.push('betSize');
+    if (!betType) missingFields.push('betType');
+    if (!multiplier) missingFields.push('multiplier');
+    if (!sport) missingFields.push('sport');
+    if (!sportCategory) missingFields.push('sportCategory');
+    if (missingFields.length > 0) {
+      return res.status(400).json({ success: false, message: `Missing required field(s): ${missingFields.join(', ')}` });
+    }
     if (!betSize || isNaN(betSize) || betSize <= 0) {
       return res.status(400).json({ success: false, message: 'Bet size must be a positive number' });
     }
