@@ -36,9 +36,7 @@ const Layout = ({ children, token, userData, onLogout, currentTab, onTabChange }
 
       <header style={headerStyle}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '1.2em' }}>
-            Adrenyline
-          </h3>
+          <img src={require('../../assets/title.png')} alt="Adrenyline Logo" style={{ height: '38px', width: 'auto', display: 'block' }} />
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

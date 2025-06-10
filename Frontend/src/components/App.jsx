@@ -28,6 +28,7 @@ import {
   darkSubscriptButtonStyle,
   interfaceContainerStyle
 } from '../styles/components/app.styles';
+import titleLogo from '../assets/title.png';
 
 function App() { 
   const { 
@@ -163,14 +164,7 @@ function App() {
             textAlign: 'center',
             padding: '40px 0'
           }}>
-            <h1 style={{
-              ...darkHeaderStyle,
-              textShadow: '0 2px 15px rgba(0,0,0,0.5)',
-              background: 'linear-gradient(45deg, #6366F1, #8B5CF6)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>Adrenyline</h1>
+            <img src={titleLogo} alt="Adrenyline Logo" style={{ height: '54px', width: 'auto', marginBottom: 24, display: 'inline-block' }} />
             <div style={{
               ...darkContainerStyle,
               backgroundColor: 'rgba(28, 28, 40, 0.7)',

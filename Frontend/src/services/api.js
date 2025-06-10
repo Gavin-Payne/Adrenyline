@@ -31,6 +31,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log('Authentication error - clearing token');
       localStorage.removeItem('token');
+      window.location.href = '/signin';
     }
     return Promise.reject(error);
   }
