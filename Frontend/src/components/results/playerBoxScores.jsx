@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaBasketballBall, FaBaseballBall, FaSpinner, FaCalendarAlt, FaSearch, FaFilter, FaSyncAlt } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../utils/constants';
+import { DateTime } from 'luxon';
 
 const PlayerBoxScores = ({ token }) => {
   const [activeTab, setActiveTab] = useState('nba');
@@ -10,9 +11,8 @@ const PlayerBoxScores = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [date, setDate] = useState(() => {
-    const pacific = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
-    const pacificDate = new Date(pacific);
-    return pacificDate.toISOString().split('T')[0]; 
+    // Use Luxon to get the current date in Pacific Time
+    return DateTime.now().setZone('America/Los_Angeles').toISODate();
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
